@@ -28,10 +28,10 @@ const list = (req, res) => {
 };
 
 const listUserTweets = (req, res) => {
-  const {id, page = 1, limit = 10 } = req.query;
+  const { id, page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
 
-  Tweet.find({"user": id}, ["content", "comments", "likes", "user", "createdAt"])
+  Tweet.find({ "user": id }, ["content", "comments", "likes", "user", "createdAt"])
     .populate("user", ["name", "username"])
     .populate("comments.user", ["name", "username"])
     .limit(Number(limit))
@@ -55,7 +55,7 @@ const listUserTweets = (req, res) => {
 
 
 const getOne = (req, res) => {
-  Tweet.findOne({"_id": req.params.id}, ["content", "comments", "likes", "user", "createdAt"])
+  Tweet.findOne({ "_id": req.params.id }, ["content", "comments", "likes", "user", "createdAt"])
     .populate("user", ["name", "username"])
     .populate("comments.user", ["name", "username"])
     .then((tweet) => {
@@ -94,7 +94,7 @@ const createComment = (req, res) => {
 
   Tweet.updateOne({ _id: tweetId }, { $addToSet: { comments } })
     .then(() => {
-      res.status(200).json({ message: "ok" });
+      res.status(200).json({ message: "ok", ...comments });
     })
     .catch((error) => {
       res.status(500).json({ message: "not updated" });
