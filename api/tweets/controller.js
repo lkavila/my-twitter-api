@@ -27,6 +27,49 @@ const list = (req, res) => {
     });
 };
 
+const listUserTweets = (req, res) => {
+  const {id, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  Tweet.find({"user": id}, ["content", "comments", "likes", "user", "createdAt"])
+    .populate("user", ["name", "username"])
+    .populate("comments.user", ["name", "username"])
+    .limit(Number(limit))
+    .skip(skip)
+    .sort({ createdAt: -1 })
+    .then((tweets) => {
+      const total = tweets.length
+      const totalPages = Math.round(total / limit);
+      const hasMore = page < totalPages;
+
+      res.status(200).json({
+        hasMore,
+        totalPages,
+        total,
+        data: tweets,
+        currentPage: page,
+      });
+    });
+};
+
+
+
+const getOne = (req, res) => {
+  Tweet.findOne({"_id": req.params.id}, ["content", "comments", "likes", "user", "createdAt"])
+    .populate("user", ["name", "username"])
+    .populate("comments.user", ["name", "username"])
+    .then((tweet) => {
+      res.status(200).json({
+        tweet: tweet,
+      });
+    })
+    .catch(() => {
+      res.status(404).json({
+        tweet: "Tweet not found"
+      })
+    });
+};
+
 const create = (req, res) => {
   const { content, userId } = req.body;
 
@@ -110,6 +153,8 @@ const getExternalTweetsByUsername = async (req, res) => {
 
 module.exports = {
   list,
+  getOne,
+  listUserTweets,
   create,
   createComment,
   likes,
