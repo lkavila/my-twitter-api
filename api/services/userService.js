@@ -14,6 +14,19 @@ const findUserById = async (userId) => {
   return userFound;
 };
 
+//Find User By Username
+const findUserByUsername = async (username) => {
+  const userFound = await User.findOne({ username: username })
+    .then((user) => {
+      return user;
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  return userFound;
+};
+
 const isUserAdmin = async (userId) => {
   try {
     const isAdmin = await User.find({
@@ -31,4 +44,4 @@ const isUserAdmin = async (userId) => {
   }
 };
 
-module.exports = { isUserAdmin, findUserById };
+module.exports = { isUserAdmin, findUserById, findUserByUsername };
