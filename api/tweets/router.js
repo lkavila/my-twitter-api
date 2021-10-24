@@ -35,7 +35,7 @@ router
 
 router
   .route("/user/:username")
-  .get(getAllUserInfo)
+  .get(authenticator, getAllUserInfo)
 
 router.route("/comments").post(authenticator, validateComment, createComment);
 
