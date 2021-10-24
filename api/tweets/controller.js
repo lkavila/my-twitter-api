@@ -34,6 +34,12 @@ const getAllUserInfo = async (req, res) => {
   const skip = (page - 1) * limit;
   const user = await findUserByUsername(username)
 
+  if(!user){
+    return res.status(404).json({
+      message: `${locale.translate("errors.user.userNotExists")}`
+    });
+  }
+
   Tweet.find({"user": user._id}, ["content", "comments", "likes", "user", "createdAt"])
     .populate("comments.user", ["name", "username"])
     .limit(Number(limit))
@@ -45,12 +51,15 @@ const getAllUserInfo = async (req, res) => {
         const hasMore = page < totalPages;
 
       res.status(200).json({
-        hasMore,
-        totalPages,
-        total,
+
         user: {email: user.email, name: user.name, username: user.username, createdAt: user.createdAt},
-        userTweets: tweets,
-        currentPage: page,
+        userTweets: {
+          tweets,
+          hasMore,
+          totalPages,
+          total,
+          currentPage: page,
+        }
       });
     });
 };
