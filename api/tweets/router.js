@@ -7,7 +7,8 @@ const {
   destroyTweet,
   getExternalTweetsByUsername,
   getOne,
-  listUserTweets
+  listUserTweets,
+  getAllUserInfo,
 } = require("./controller");
 const { logger } = require("../middleware/logger");
 const { authenticator } = require("../middleware/authenticator");
@@ -31,6 +32,10 @@ router
 router
   .route("/user")
   .get(listUserTweets)
+
+router
+  .route("/user/:username")
+  .get(getAllUserInfo)
 
 router.route("/comments").post(authenticator, validateComment, createComment);
 

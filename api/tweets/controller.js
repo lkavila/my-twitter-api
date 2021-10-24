@@ -1,4 +1,5 @@
 const Tweet = require("./model");
+const { findUserByUsername } = require("../services/userService");
 const { locale } = require("../../locale");
 const { getTweetsByUsername } = require("../services/twitterService");
 
@@ -27,20 +28,47 @@ const list = (req, res) => {
     });
 };
 
-const listUserTweets = (req, res) => {
-  const {id, page = 1, limit = 10 } = req.query;
+const getAllUserInfo = async (req, res) => {
+  const {username} = req.params
+  const {page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
+  const user = await findUserByUsername(username)
 
-  Tweet.find({"user": id}, ["content", "comments", "likes", "user", "createdAt"])
-    .populate("user", ["name", "username"])
+  Tweet.find({"user": user._id}, ["content", "comments", "likes", "user", "createdAt"])
     .populate("comments.user", ["name", "username"])
     .limit(Number(limit))
     .skip(skip)
     .sort({ createdAt: -1 })
     .then((tweets) => {
-      const total = tweets.length
-      const totalPages = Math.round(total / limit);
-      const hasMore = page < totalPages;
+        const total = tweets.length
+        const totalPages = Math.round(total / limit);
+        const hasMore = page < totalPages;
+
+      res.status(200).json({
+        hasMore,
+        totalPages,
+        total,
+        user: {email: user.email, name: user.name, username: user.username, createdAt: user.createdAt},
+        userTweets: tweets,
+        currentPage: page,
+      });
+    });
+};
+
+const listUserTweets = (req, res) => {
+  const {id, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  Tweet.find({"user": id}, ["content", "comments", "likes", "user", "createdAt"])
+      .populate("user", ["name", "username"])
+      .populate("comments.user", ["name", "username"])
+      .limit(Number(limit))
+      .skip(skip)
+      .sort({ createdAt: -1 })
+      .then((tweets) => {
+        const total = tweets.length
+        const totalPages = Math.round(total / limit);
+        const hasMore = page < totalPages;
 
       res.status(200).json({
         hasMore,
@@ -159,5 +187,6 @@ module.exports = {
   createComment,
   likes,
   destroyTweet,
+  getAllUserInfo,
   getExternalTweetsByUsername,
 };
